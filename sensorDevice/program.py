@@ -2,12 +2,15 @@ from tinytuya import *
 import  json
 #from getmac import get_mac_address as gma
 from pymongo import MongoClient, InsertOne
-
+import subprocess
+import os
 
 host = 'localhost'
 port = 27017
 documment = 'LUPS'
 deviceInfo = {'objeto':[]}
+usuario = '****'
+senha = '****'
 
 c = Cloud(
         apiRegion="us", 
@@ -39,13 +42,42 @@ def importDataBase(db):
         except Exception as e:
  	        print("Is not possible connect in database\n Error:", e)
 
+def startServiceMongo():
+        command = "systemctl start mongod"
+        command_credential = f'echo {senha} | sudo -S {command}'
+        try:
+        # Executa o comando e captura a saída
+                resultado = subprocess.check_output(command_credential, shell=True, stderr=subprocess.STDOUT, universal_newlines=True)
+                return resultado
+        except subprocess.CalledProcessError as e:
+                return f"Erro ao executar o comando: {e.output}"
+
+def verifyStatusMongo():
+        commandVerify = "systemctl is-active mongod"
+        try:
+        # Executa o comando e captura a saída
+                resultado = subprocess.check_output(commandVerify, shell=True, stderr=subprocess.STDOUT, universal_newlines=True)
+                return resultado
+        except subprocess.CalledProcessError as e:
+                return f"Erro ao executar o comando: {e.output}"
+
 def main():
         verify = 1
         while verify == 1:
+                result = verifyStatusMongo()
+                status = result.strip()
+                print(status)
+                if(status != 'active'):
+                        print(status)
+                        startServiceMongo()
+                        print(status)
                 db = connectMongo()
                 scanObject()
                 importDataBase(db)
-                time(240)
+                time.sleep(240)
+                print("FEITO")  
+
+                
         
 main()
 	
