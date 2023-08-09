@@ -75,7 +75,6 @@ def main():
                 scanObject()
                 importDataBase(db)
                 time.sleep(240)
-                print("FEITO")  
 
                 
         
