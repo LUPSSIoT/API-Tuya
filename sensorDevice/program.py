@@ -1,6 +1,4 @@
 from tinytuya import * 
-import  json
-#from getmac import get_mac_address as gma
 from pymongo import MongoClient, InsertOne
 import subprocess
 import os
@@ -9,8 +7,8 @@ host = 'localhost'
 port = 27017
 documment = 'LUPS'
 deviceInfo = {'objeto':[]}
-usuario = '****'
-senha = '****'
+usuario = 'LUPS'
+senha = 'lups@nrc'
 
 c = Cloud(
         apiRegion="us", 
@@ -23,7 +21,7 @@ def scanObject():
 	        deviceInfo['objeto'].append({       
                                 'id': devices[i]['id'],
                                 'status': c.getstatus(devices[i]['id'])
-                        })
+                })
 
 
 def connectMongo():
@@ -36,9 +34,9 @@ def connectMongo():
 
 def importDataBase(db):
         try:
- 	        collection = db['Objeto']
- 	        result = collection.insert_many(deviceInfo['objeto'])
- 	        print(result)
+                collection = db['objeto']
+                result = collection.insert_many(deviceInfo['objeto'])
+                print(result)
         except Exception as e:
  	        print("Is not possible connect in database\n Error:", e)
 
@@ -62,22 +60,21 @@ def verifyStatusMongo():
                 return f"Erro ao executar o comando: {e.output}"
 
 def main():
-        verify = 1
-        while verify == 1:
+        db = connectMongo()
+        while True:
                 result = verifyStatusMongo()
                 status = result.strip()
                 print(status)
                 if(status != 'active'):
-                        print(status)
-                        startServiceMongo()
-                        print(status)
-                db = connectMongo()
+                        status = startServiceMongo()
+                        db = connectMongo()
+                        print(status.strip())
                 scanObject()
                 importDataBase(db)
-                time.sleep(240)
+                deviceInfo['objeto'].clear()
+                time.sleep(300) 
 
                 
         
 main()
-	
 
